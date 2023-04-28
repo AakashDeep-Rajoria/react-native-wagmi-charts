@@ -35,8 +35,7 @@ export const AnimatedText = ({ text, style }: AnimatedTextProps) => {
         if (data !== prevData && inputRef.current) {
           inputRef.current.value = data;
         }
-      },
-      [text]
+      }
     );
   }
   const animatedProps = useAnimatedProps(() => {

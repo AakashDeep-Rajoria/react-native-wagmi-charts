@@ -5,7 +5,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Line as SVGLine, LineProps } from 'react-native-svg';
-import { getYForX } from 'react-native-redash';
+import { getYForX, parse } from 'react-native-redash';
 
 import { LineChartDimensionsContext } from './Chart';
 import { useLineChart } from './useLineChart';
@@ -53,10 +53,16 @@ export function LineChartHorizontalLine({
   at = { index: 0 },
   offsetY = 0,
 }: HorizontalLineProps) {
-  const { width, parsedPath, pointWidth, height, gutter } = React.useContext(
+  const { width, path, height, gutter } = React.useContext(
     LineChartDimensionsContext
   );
-  const { yDomain } = useLineChart();
+  const { data, yDomain } = useLineChart();
+
+  const parsedPath = React.useMemo(() => parse(path), [path]);
+  const pointWidth = React.useMemo(
+    () => width / data.length,
+    [data.length, width]
+  );
 
   const y = useDerivedValue(() => {
     if (typeof at === 'number' || at.index != null) {
@@ -82,26 +88,14 @@ export function LineChartHorizontalLine({
     const offsetTopPixels = gutter + percentageOffsetTop * heightBetweenGutters;
 
     return withTiming(offsetTopPixels + offsetY);
-  }, [
-    at,
-    gutter,
-    height,
-    offsetY,
-    parsedPath,
-    pointWidth,
-    yDomain.max,
-    yDomain.min,
-  ]);
+  });
 
-  const lineAnimatedProps = useAnimatedProps(
-    () => ({
-      x1: 0,
-      x2: width,
-      y1: y.value,
-      y2: y.value,
-    }),
-    [width, y]
-  );
+  const lineAnimatedProps = useAnimatedProps(() => ({
+    x1: 0,
+    x2: width,
+    y1: y.value,
+    y2: y.value,
+  }));
 
   return (
     <AnimatedLine

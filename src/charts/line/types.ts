@@ -18,7 +18,6 @@ export type TLineChartContext = {
   domain: TLineChartDomain;
   yDomain: YDomain;
   xLength: number;
-  xDomain?: [number, number] | undefined;
 };
 
 export type YRangeProp = {

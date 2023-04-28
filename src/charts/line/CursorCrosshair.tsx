@@ -45,22 +45,19 @@ export function LineChartCursorCrosshair({
     }, 100);
   }, []);
 
-  const animatedCursorStyle = useAnimatedStyle(
-    () => ({
-      transform: [
-        { translateX: currentX.value - outerSize / 2 },
-        { translateY: currentY.value - outerSize / 2 },
-        {
-          scale: enableSpringAnimation
-            ? withSpring(isActive.value ? 1 : 0, {
-                damping: 10,
-              })
-            : 0,
-        },
-      ],
-    }),
-    [currentX, currentY, enableSpringAnimation, isActive, outerSize]
-  );
+  const animatedCursorStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: currentX.value - outerSize / 2 },
+      { translateY: currentY.value - outerSize / 2 },
+      {
+        scale: enableSpringAnimation
+          ? withSpring(isActive.value ? 1 : 0, {
+              damping: 10,
+            })
+          : 0,
+      },
+    ],
+  }));
 
   return (
     <LineChartCursor type="crosshair" {...props}>

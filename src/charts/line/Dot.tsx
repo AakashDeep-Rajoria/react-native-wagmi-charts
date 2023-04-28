@@ -8,10 +8,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Circle, CircleProps } from 'react-native-svg';
-import { getYForX } from 'react-native-redash';
+import { getYForX, parse } from 'react-native-redash';
 
 import { LineChartDimensionsContext } from './Chart';
-import { LineChartPathContext } from './LineChartPathContext';
+import { LineChartPathContext } from './ChartPath';
 import { useLineChart } from './useLineChart';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -57,8 +57,8 @@ export function LineChartDot({
   size = 4,
   outerSize = size * 4,
 }: LineChartDotProps) {
-  const { isActive } = useLineChart();
-  const { parsedPath, pointWidth } = React.useContext(
+  const { data, isActive } = useLineChart();
+  const { path, pathWidth: width } = React.useContext(
     LineChartDimensionsContext
   );
 
@@ -72,24 +72,28 @@ export function LineChartDot({
 
   ////////////////////////////////////////////////////////////
 
-  const x = useDerivedValue(
-    () => withTiming(pointWidth * at),
-    [at, pointWidth]
-  );
-  const y = useDerivedValue(
-    () => withTiming(getYForX(parsedPath!, x.value) || 0),
-    [parsedPath, x]
+  const parsedPath = React.useMemo(() => parse(path), [path]);
+
+  ////////////////////////////////////////////////////////////
+
+  const pointWidth = React.useMemo(
+    () => width / (data.length - 1),
+    [data.length, width]
   );
 
   ////////////////////////////////////////////////////////////
 
-  const animatedDotProps = useAnimatedProps(
-    () => ({
-      cx: x.value,
-      cy: y.value,
-    }),
-    [x, y]
+  const x = useDerivedValue(() => withTiming(pointWidth * at));
+  const y = useDerivedValue(() =>
+    withTiming(getYForX(parsedPath!, x.value) || 0)
   );
+
+  ////////////////////////////////////////////////////////////
+
+  const animatedDotProps = useAnimatedProps(() => ({
+    cx: x.value,
+    cy: y.value,
+  }));
 
   const animatedOuterDotProps = useAnimatedProps(() => {
     let defaultProps = {
@@ -146,7 +150,7 @@ export function LineChartDot({
       opacity: animatedOpacity,
       r: scale,
     };
-  }, [hasPulse, isActive, outerSize, pulseBehaviour, pulseDurationMs, x, y]);
+  }, [outerSize]);
 
   ////////////////////////////////////////////////////////////
 
